@@ -1,0 +1,14 @@
+# ignore all files start with .
+.* 
+!.gitignore
+
+#  ignore all executable file and internal file
+dns_svr
+*.exe
+*.o
+*.bat
+
+# ignore all test case
+*.txt
+packets
+visible
