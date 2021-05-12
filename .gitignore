@@ -1,6 +1,7 @@
 # ignore all files start with .
 .* 
 !.gitignore
+!.gitlab-ci.yml
 
 #  ignore all executable file and internal file
 dns_svr

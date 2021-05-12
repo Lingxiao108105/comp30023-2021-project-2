@@ -5,9 +5,9 @@
  * Server function stuff 
 */
 void run_server(int port) {
-	uint8_t buffer[2048];
+	uint8_t *dns_message;
 	int sockfd, newsockfd;
-	int n, i;
+	int i,length;
 
 	sockfd = create_server_socket(port);
 
@@ -25,25 +25,22 @@ void run_server(int port) {
 			exit(EXIT_FAILURE);
 		}
 
-		/* Read from client */
-		n = read(newsockfd, buffer, 2047);
-		if (n == 0) {
-			close(newsockfd);
+		if((dns_message = read_message(newsockfd, &length)) == NULL){
 			continue;
 		}
-		if (n < 0) {
-			perror("read");
-			exit(EXIT_FAILURE);
-		}
+		
+		read_dns(dns_message,length);
 
 		/*print what I read*/
-		for(i=0;i<n;i++){
+		for(i=0;i<52;i++){
 			if(i%10 == 0){
 				printf("\n");
 			}
-			printf("%hhu ", buffer[i]);
+			printf("%x ", dns_message[i]);
 		}
 		printf("\n");
+
+		//read_dns_header(dns_message);
 
 		close(newsockfd);
 	}
@@ -89,3 +86,41 @@ int create_server_socket(const int port) {
 	return sockfd;
 }
 
+
+/**
+ * read the message and store it
+ * return NULL if read nothing
+*/
+uint8_t *read_message(int newsockfd, int *length){
+	uint16_t buffer;
+	uint8_t *dns_message;
+	int n;
+
+	// Read the lenght from client
+	n = read(newsockfd, &buffer, sizeof(buffer));
+	if (n == 0) {
+		close(newsockfd);
+		return NULL;
+	}
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+	
+	*length = ntohs(buffer);
+
+	//read and store the message
+	dns_message = (uint8_t *)malloc(sizeof(char)*ntohs(buffer));
+	n = read(newsockfd, dns_message, sizeof(char)*ntohs(buffer));
+	if (n == 0) {
+		close(newsockfd);
+		free(dns_message);
+		return NULL;
+	}
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+
+	return dns_message;
+}
