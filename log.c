@@ -69,13 +69,15 @@ void unimplemented_log(FILE *logfd){
  * write <domain_name> is at <IP address> log to log file
 */
 void response_log(FILE *logfd, Dns_message *dns_message){
-    char ip[INET6_ADDRSTRLEN];
+    char ip[INET6_ADDRSTRLEN+1];
     char *domain_name = (char *)dns_message->dns_question->q_name;
 
     write_timestamp(logfd);
     //convert binary IPv6 to string
     struct in6_addr sin6_addr = dns_message->dns_answer->sin6_addr;
-    inet_ntop(AF_INET6,&sin6_addr,ip,sizeof(sin6_addr));
+    if(inet_ntop(AF_INET6,&sin6_addr,(char *)ip,INET6_ADDRSTRLEN) == NULL){
+        printf("IPv6 convertion error！");
+    }
     fprintf(logfd, "%s is at %s\n",domain_name,ip);
     fflush(logfd);
 }

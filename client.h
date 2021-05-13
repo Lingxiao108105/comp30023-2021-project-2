@@ -14,14 +14,27 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/sendfile.h>
+#include <pthread.h>
 
 #include "dns.h"
+#include "log.h"
+#include "dns_buffer.h"
+#include "server.h"
+#include "global.h"
+
+//the argument of run client
+typedef struct client_arg{
+    int upsvrfd;
+	Dns_query_buffer *dns_query_buffer;
+	FILE *logfd;
+}Client_arg;
+
 
 /**
  * read dns response from server and return it to the client
- * param sockfd : the socket to server
+ * param upsvrfd : the socket to upstream server
 */
-void run_client(int serverfd);
+void *run_client(void *arg);
 /**
  * Connet to the dns server
  * param argv : the input for main
@@ -33,5 +46,15 @@ int create_client_socket(int argc, char* argv[]);
 */
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
+/**
+ * read the response message and store it
+ * return NULL if read nothing
+*/
+uint8_t *read_response_message(int newsockfd, int *length);
+/**
+ * send the response message back to client
+*/
+void process_response_message(Dns_message *dns_message,
+					Dns_query_buffer *dns_query_buffer);
 
 #endif

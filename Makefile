@@ -5,7 +5,7 @@
 # BIN - binary
 CC=gcc
 OBJ=server.o dns.o client.o dns_buffer.o pqueue.o log.o
-COPT=-Wall -Wpedantic -g
+COPT=-Wall -Wpedantic -g -lpthread
 BIN_PHASE=dns_svr
 
 # Running "make" with no argument will make the first target in the file

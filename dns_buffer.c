@@ -73,7 +73,7 @@ Dns_query_data *find_and_pop_query_data(Dns_query_buffer *dns_query_buffer,
 */
 int compare_query_data(void *pv1, void *pv2){
     Dns_query_data *p1 = (Dns_query_data *)pv1;
-    Dns_query_data *p2 = (Dns_query_data **)pv2;
+    Dns_query_data *p2 = (Dns_query_data *)pv2;
     if(p1->id == p2->id){
         return EQUAL;
     }

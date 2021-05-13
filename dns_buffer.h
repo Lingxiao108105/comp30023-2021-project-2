@@ -9,8 +9,6 @@
 #include "dns.h"
 #include "pqueue.h"
 
-#define NOTIMPLEMENTED 4
-
 typedef struct dns_query_data {
     int sockfd;
     int id;
