@@ -9,6 +9,8 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
+#define NOTIMPLEMENTED 4
+
 
 /** get the i bit of x
  * for 16 bits and 0 is the left most one
@@ -80,6 +82,10 @@ Dns_header *read_dns_header(uint8_t *buffer);
  * read the flags
 */
 Dns_flags *read_dns_flags(Dns_message *dns_message);
+/**
+ * set the Rcode in dns message to the given Rcode
+*/
+void set_Rcode(Dns_message *dns_message, uint8_t Rcode);
 /**
  * read the Question section
  * can only have One question

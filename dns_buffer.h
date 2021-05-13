@@ -1,8 +1,15 @@
 #ifndef _DNS_BUFFER_H
 #define _DNS_BUFFER_H
+/**
+ * store all the dns query message in a priorty queue
+ * use pqueue.h but hide the implementation 
+*/
+
 
 #include "dns.h"
 #include "pqueue.h"
+
+#define NOTIMPLEMENTED 4
 
 typedef struct dns_query_data {
     int sockfd;

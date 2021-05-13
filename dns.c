@@ -48,6 +48,7 @@ Dns_header *read_dns_header(uint8_t *raw_message){
 
 }
 
+
 /**
  * read the flags
 */
@@ -74,6 +75,27 @@ Dns_flags *read_dns_flags(Dns_message *dns_message){
 
     return dns_flags;
 
+}
+
+/**
+ * set the Rcode in dns message to the given Rcode
+*/
+void set_Rcode(Dns_message *dns_message, uint8_t Rcode){
+    uint16_t flags;
+    uint8_t *raw_message;
+    uint16_t *raw_flags;
+
+    dns_message->dns_flags->Rcode = Rcode;
+    //set the flags in structure
+    flags = dns_message->dns_header->flags;
+    flags = (flags&0xFFF0)|(uint16_t)Rcode;
+    dns_message->dns_header->flags = flags;
+    //set the flags in raw message
+    raw_message = dns_message->raw_message;
+    raw_message += 2; //skip the length
+    raw_message += 2; //skip the id
+    raw_flags = (uint16_t *)raw_message;
+    *raw_flags = htons(flags);
 }
 
 /**

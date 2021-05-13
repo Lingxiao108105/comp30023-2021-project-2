@@ -5,7 +5,8 @@
  * param port: listen to which prot
  * param serverfd: the socket to server
 */
-void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer){
+void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer, 
+				FILE *logfd){
 	uint8_t *raw_message;
 	Dns_message *dns_message;
 	int sockfd, newsockfd;
@@ -27,12 +28,20 @@ void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer){
 			exit(EXIT_FAILURE);
 		}
 
+		//read and store the raw message
 		if((raw_message = read_message(newsockfd, &length)) == NULL){
 			continue;
 		}
 		
+		//read raw message into struture
 		dns_message = read_dns(raw_message,length);
-
+		//print the request log
+		requested_log(logfd,(char *)dns_message->dns_question->q_name);
+		//check the message
+		if(check_message(dns_message) == INVALID){
+			invalid_message(dns_message,logfd,newsockfd);
+			continue;
+		}
 		/**
 		 * test the output
 		 * print what I read
@@ -45,7 +54,6 @@ void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer){
 		}
 		printf("\n");
 
-		
 		//transfer the query to server
 		n = write(serverfd, raw_message, length);
 		if(n != length){
@@ -136,3 +144,32 @@ uint8_t *read_message(int newsockfd, int *length){
 	return dns_message;
 }
 
+/**
+ * check the validation of message
+*/
+int check_message(Dns_message *dns_message){
+	return check_valid_message(dns_message);
+}
+
+/**
+ * deal with invalid message
+*/
+void invalid_message(Dns_message *dns_message, FILE *logfd, int newsockfd){
+	int n;
+	//write the log
+	unimplemented_log(logfd);
+	//set the Rcode to NOTIMPLEMENTED
+	set_Rcode(dns_message, NOTIMPLEMENTED);
+	//send back to client
+	n = write(newsockfd,dns_message->raw_message,
+				dns_message->dns_header->length +2); // length is 2 bytes
+	//close the socket and free the message
+	close(newsockfd);
+	free(dns_message);
+
+	if (n != dns_message->dns_header->length + 2) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+
+}
