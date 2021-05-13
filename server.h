@@ -16,6 +16,7 @@
 #include <sys/sendfile.h>
 
 #include "dns.h"
+#include "dns_buffer.h"
 
 
 
@@ -24,7 +25,7 @@
  * param port: listen to which prot
  * param serverfd: the socket to server
 */
-void run_server(int port, int serverfd);
+void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer);
 /** function from "week9-solutions/server-1.3.c"
  * Create and return a socket bound to the given port
 */

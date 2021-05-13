@@ -5,8 +5,9 @@
  * param port: listen to which prot
  * param serverfd: the socket to server
 */
-void run_server(int port, int serverfd){
-	uint8_t *dns_message;
+void run_server(int port, int serverfd, Dns_query_buffer *dns_query_buffer){
+	uint8_t *raw_message;
+	Dns_message *dns_message;
 	int sockfd, newsockfd;
 	int i,length,n;
 
@@ -26,11 +27,11 @@ void run_server(int port, int serverfd){
 			exit(EXIT_FAILURE);
 		}
 
-		if((dns_message = read_message(newsockfd, &length)) == NULL){
+		if((raw_message = read_message(newsockfd, &length)) == NULL){
 			continue;
 		}
 		
-		read_dns(dns_message,length);
+		dns_message = read_dns(raw_message,length);
 
 		/**
 		 * test the output
@@ -40,12 +41,13 @@ void run_server(int port, int serverfd){
 			if(i%10 == 0){
 				printf("\n");
 			}
-			printf("%x ", dns_message[i]);
+			printf("%x ", raw_message[i]);
 		}
 		printf("\n");
 
+		
 		//transfer the query to server
-		n = write(serverfd, dns_message, length);
+		n = write(serverfd, raw_message, length);
 		if(n != length){
 			perror("socket");
 			exit(EXIT_FAILURE);

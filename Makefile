@@ -4,7 +4,7 @@
 # COPT - compiler flags
 # BIN - binary
 CC=gcc
-OBJ=server.o dns.o client.o
+OBJ=server.o dns.o client.o dns_buffer.o pqueue.o
 COPT=-Wall -Wpedantic -g
 BIN_PHASE=dns_svr
 
@@ -29,4 +29,4 @@ format:
 	clang-format -i *.c *.h
 
 clean:
-	rm -rf *.o $(BIN_PHASE) 
+	rm -rf *.o $(BIN_PHASE) dns_svr.log

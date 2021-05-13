@@ -13,3 +13,6 @@ dns_svr
 *.txt
 packets
 visible
+
+#ignore log file
+dns_svr.log

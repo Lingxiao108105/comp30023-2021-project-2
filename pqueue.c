@@ -1,4 +1,4 @@
-#include "./pqueue.h"
+#include "pqueue.h"
 
 // create an empty priority queue
 Pqueue *create_pqueue(){
@@ -83,14 +83,14 @@ void push_node(Pqueue *pqueue, Node *temp,
     }
 
     //add new node at head
-    if(compare(temp->data,pqueue->head->data)==-1){
+    if(compare(temp->data,pqueue->head->data)==SMALLER){
         temp->next = pqueue->head;
         pqueue->head = temp;
     }
     else{
         //find the place to insert new node
         while(curr_node->next != NULL &&
-            compare(temp->data,curr_node->next->data)!=-1){
+            compare(temp->data,curr_node->next->data)!=SMALLER){
             curr_node = curr_node->next;
         }
 
@@ -128,7 +128,7 @@ unsigned int pqueue_length(Pqueue *pqueue){
     return pqueue->length;
 }
 
-/**remove a node which contain a specific data 
+/**remove a node which contains a specific data 
  * will not free data
  */
 void remove_node(Pqueue *pqueue, void *data){
@@ -160,6 +160,44 @@ void remove_node(Pqueue *pqueue, void *data){
         (pqueue->length)--;
         free(temp);
     }
+}
+
+/**find the specific data using compare function
+ * and pop it
+ * will not free data
+ */
+void *find_data(Pqueue *pqueue, void *data,
+            int (*compare)(void *data1, void *data2)){
+
+    Node *curr_node = pqueue->head;
+    void *target;
+    //the queue is empty
+    if(curr_node == NULL){
+        return NULL;
+    }
+
+
+    //head is the node we want
+    if(compare(curr_node->data, data) == EQUAL){
+        target =  pop(pqueue);
+    }
+    else{
+        //find the node we need to remove
+        while(curr_node->next!=NULL &&
+            compare(curr_node->next->data, data) != EQUAL){
+            curr_node = curr_node->next;
+        }
+
+        if(curr_node->next==NULL){
+            return NULL;
+        }
+        Node *temp = curr_node->next;
+        target = temp->data;
+        curr_node->next = temp->next;
+        (pqueue->length)--;
+        free(temp);
+    }
+    return target;
 }
 
 /**sort the priority queue

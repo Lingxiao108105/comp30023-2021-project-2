@@ -2,10 +2,14 @@
 #define _PQUEUE_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 /** a Priority Queue which can reuse by change the data
  * 
 */
+#define EQUAL 0
+#define SMALLER (-1)
+#define BIGGER 1
 
 // Node
 typedef struct node{
@@ -47,8 +51,16 @@ void push_data(Pqueue *pqueue, void *data,
 int isEmpty(Pqueue *pqueue);
 // return  the length of priority queue
 unsigned int pqueue_length(Pqueue *pqueue);
-// remove a node which contain a specific data
+/**remove a node which contain a specific data 
+ * will not free data
+ */
 void remove_node(Pqueue *pqueue, void *data);
+/**find the specific data using compare function
+ * and pop it
+ * will not free data
+ */
+void *find_data(Pqueue *pqueue, void *data,
+            int (*compare)(void *data1, void *data2));
 /**sort the priority queue
  */
 Pqueue *pqueue_sort(Pqueue *pqueue, int (*compare)(void *data1, void *data2));
