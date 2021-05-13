@@ -18,12 +18,16 @@
 #include "dns.h"
 
 
+
 /**
- * function from "week9-solutions/server-1.3.c"
+ * Server: read dns query from clinet and write it to server
+ * param port: listen to which prot
+ * param serverfd: the socket to server
 */
-/* Server function stuff */
-void run_server(int port);
-/* Create and return a socket bound to the given port */
+void run_server(int port, int serverfd);
+/** function from "week9-solutions/server-1.3.c"
+ * Create and return a socket bound to the given port
+*/
 int create_server_socket(const int port);
 /**
  * read the message and store it

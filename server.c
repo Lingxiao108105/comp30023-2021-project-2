@@ -1,13 +1,14 @@
 #include "server.h"
 
 /**
- * function from "week9-solutions/server-1.3.c"
- * Server function stuff 
+ * Server: read dns query from clinet and write it to server
+ * param port: listen to which prot
+ * param serverfd: the socket to server
 */
-void run_server(int port) {
+void run_server(int port, int serverfd){
 	uint8_t *dns_message;
 	int sockfd, newsockfd;
-	int i,length;
+	int i,length,n;
 
 	sockfd = create_server_socket(port);
 
@@ -31,7 +32,10 @@ void run_server(int port) {
 		
 		read_dns(dns_message,length);
 
-		/*print what I read*/
+		/**
+		 * test the output
+		 * print what I read
+		*/
 		for(i=0;i<52;i++){
 			if(i%10 == 0){
 				printf("\n");
@@ -40,9 +44,13 @@ void run_server(int port) {
 		}
 		printf("\n");
 
-		//read_dns_header(dns_message);
-
-		close(newsockfd);
+		//transfer the query to server
+		n = write(serverfd, dns_message, length);
+		if(n != length){
+			perror("socket");
+			exit(EXIT_FAILURE);
+		}
+		
 	}
 
 	close(sockfd);
@@ -106,12 +114,13 @@ uint8_t *read_message(int newsockfd, int *length){
 		perror("read");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	*length = ntohs(buffer);
 
 	//read and store the message
-	dns_message = (uint8_t *)malloc(sizeof(char)*ntohs(buffer));
-	n = read(newsockfd, dns_message, sizeof(char)*ntohs(buffer));
+	dns_message = (uint8_t *)malloc(sizeof(char)*(ntohs(buffer)+2));
+	bcopy(&buffer,dns_message,sizeof(buffer));
+	n = read(newsockfd, dns_message+sizeof(buffer), sizeof(char)*ntohs(buffer));
 	if (n == 0) {
 		close(newsockfd);
 		free(dns_message);
@@ -124,3 +133,4 @@ uint8_t *read_message(int newsockfd, int *length){
 
 	return dns_message;
 }
+

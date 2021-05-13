@@ -3,7 +3,7 @@
 /**
  * read the dns message
 */
-void read_dns(uint8_t *raw_message, int length){
+Dns_message *read_dns(uint8_t *raw_message, int length){
     //point to the current place of raw message
     uint8_t **c_pt = &raw_message;
     Dns_message *dns_message = (Dns_message *)malloc(sizeof(Dns_message));
@@ -11,6 +11,7 @@ void read_dns(uint8_t *raw_message, int length){
 
     //read the header
     dns_message->dns_header = read_dns_header(raw_message); 
+    dns_message->dns_flags = read_dns_flags(dns_message);
     //read the question and answer when they exist
     if(dns_message->dns_header->qd_count){
        dns_message->dns_question = read_dns_question(raw_message,length, c_pt);
@@ -25,6 +26,7 @@ void read_dns(uint8_t *raw_message, int length){
         dns_message->dns_answer = NULL;
     }
 
+    return dns_message;
 }
 
 
@@ -34,13 +36,43 @@ void read_dns(uint8_t *raw_message, int length){
 Dns_header *read_dns_header(uint8_t *raw_message){
     Dns_header *dns_header = (Dns_header *)malloc(sizeof(Dns_header));
     bcopy(raw_message,dns_header,sizeof(Dns_header));
+    dns_header->length = ntohs(dns_header->id);
     dns_header->id = ntohs(dns_header->id);
     dns_header->flags = ntohs(dns_header->flags);
     dns_header->qd_count = ntohs(dns_header->qd_count);
     dns_header->an_count = ntohs(dns_header->an_count);
     dns_header->ns_count = ntohs(dns_header->ns_count);
     dns_header->ar_count = ntohs(dns_header->ar_count);
+
     return dns_header;
+
+}
+
+/**
+ * read the flags
+*/
+Dns_flags *read_dns_flags(Dns_message *dns_message){
+    Dns_flags *dns_flags = (Dns_flags *)malloc(sizeof(Dns_flags));
+    uint16_t flags = dns_message->dns_header->flags;
+    //read QR
+    dns_flags->QR = GET_BIT(flags,0);
+    //read Opcode
+    //bzero(&dns_flags->Opcode,sizeof(dns_flags->Opcode));
+    dns_flags->Opcode = flags>>11&0x000F;
+    //read AA
+    dns_flags->AA = GET_BIT(flags,5);
+    //read TC
+    dns_flags->TC = GET_BIT(flags,6);
+    //read RD
+    dns_flags->RD = GET_BIT(flags,7);
+    //read RA
+    dns_flags->RA = GET_BIT(flags,8);
+    //read Z
+    dns_flags->Z = flags&0x0070>>4;
+    //read Rcode
+    dns_flags->Rcode = flags&0X000F;
+
+    return dns_flags;
 
 }
 
@@ -131,6 +163,10 @@ Dns_answer *read_dns_answer(uint8_t *raw_message, int length, uint8_t **c_pt){
  * free the dns message
 */
 void free_dns_message(Dns_message *dns_message){
+    if(dns_message == NULL){
+        return;
+    }
+
     free(dns_message->raw_message);
     free(dns_message->dns_header);
     if(dns_message->dns_question != NULL){
@@ -139,4 +175,36 @@ void free_dns_message(Dns_message *dns_message){
     free(dns_message->dns_question);
     free(dns_message->dns_answer);
     free(dns_message);
+}
+
+/**
+ * check the validation
+ * return INVALID (value: -1) if not valid
+*/
+int check_valid_message(Dns_message *dns_message){
+    assert(dns_message!=NULL);
+    //check the answer
+    if(dns_message->dns_header->qd_count){
+        //check type
+        if(dns_message->dns_question->q_type != AAAA){
+            return INVALID;
+        }
+    }
+    if(dns_message->dns_flags->QR == QUERY){
+        return VALID;
+    }
+    //check the request dns message
+    if(dns_message->dns_header->an_count){
+        //check type
+        if(dns_message->dns_answer->a_type != AAAA){
+            return INVALID;
+        }
+    }
+    else{
+        //we dont have an answer in response
+        return INVALID; 
+    }
+
+    //finish checking
+    return VALID;
 }
