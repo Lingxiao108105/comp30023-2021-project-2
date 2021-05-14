@@ -45,13 +45,13 @@ void print_dns_message(Dns_message *dns_message){
     }
     else{
         printf("header: \n");
-        printf("length %u\n",dns_message->dns_header->length);
-        printf("id %u\n",dns_message->dns_header->id);
-        printf("flags %u\n",dns_message->dns_header->flags);
-        printf("qn %u\n",dns_message->dns_header->qd_count);
-        printf("an %u\n",dns_message->dns_header->an_count);
-        printf("ns %u\n",dns_message->dns_header->ns_count);
-        printf("ar %u\n",dns_message->dns_header->ar_count);
+        printf("length %u ",dns_message->dns_header->length);
+        printf("id %u ",dns_message->dns_header->id);
+        printf("flags %u ",dns_message->dns_header->flags);
+        printf("qn %u ",dns_message->dns_header->qd_count);
+        printf("an %u ",dns_message->dns_header->an_count);
+        printf("ns %u ",dns_message->dns_header->ns_count);
+        printf("ar %u ",dns_message->dns_header->ar_count);
         printf("\n");
     }
     if(dns_message->dns_flags == NULL){
@@ -59,14 +59,14 @@ void print_dns_message(Dns_message *dns_message){
     }
     else{
         printf("flags: \n");
-        printf("QR %u\n",dns_message->dns_flags->QR);
-        printf("Opcode %u\n",dns_message->dns_flags->Opcode);
-        printf("AA %u\n",dns_message->dns_flags->AA);
-        printf("TC %u\n",dns_message->dns_flags->TC);
-        printf("RD %u\n",dns_message->dns_flags->RD);
-        printf("RA %u\n",dns_message->dns_flags->RA);
-        printf("Z %u\n",dns_message->dns_flags->Z);
-        printf("R %u\n",dns_message->dns_flags->Rcode);
+        printf("QR %u ",dns_message->dns_flags->QR);
+        printf("Opcode %u ",dns_message->dns_flags->Opcode);
+        printf("AA %u ",dns_message->dns_flags->AA);
+        printf("TC %u ",dns_message->dns_flags->TC);
+        printf("RD %u ",dns_message->dns_flags->RD);
+        printf("RA %u ",dns_message->dns_flags->RA);
+        printf("Z %u ",dns_message->dns_flags->Z);
+        printf("R %u ",dns_message->dns_flags->Rcode);
         printf("\n");
     }
     if(dns_message->dns_question == NULL){
@@ -74,9 +74,9 @@ void print_dns_message(Dns_message *dns_message){
     }
     else{
         printf("Question: \n");
-        printf("name %s\n",dns_message->dns_question->q_name);
-        printf("type %u\n",dns_message->dns_question->q_type);
-        printf("class %u\n",dns_message->dns_question->q_class);
+        printf("name %s ",dns_message->dns_question->q_name);
+        printf("type %u ",dns_message->dns_question->q_type);
+        printf("class %u ",dns_message->dns_question->q_class);
         printf("\n");
     }
     if(dns_message->dns_answer == NULL){
@@ -84,14 +84,14 @@ void print_dns_message(Dns_message *dns_message){
     }
     else{
         printf("Answer: \n");
-        printf("name offset %u\n",dns_message->dns_answer->name_offset);
-        printf("type %u\n",dns_message->dns_answer->a_type);
-        printf("class %u\n",dns_message->dns_answer->a_class);
-        printf("TTL %u\n",dns_message->dns_answer->ttl);
-        printf("rd length %u\n",dns_message->dns_answer->rd_length);
+        printf("name offset %u ",dns_message->dns_answer->name_offset);
+        printf("type %u ",dns_message->dns_answer->a_type);
+        printf("class %u ",dns_message->dns_answer->a_class);
+        printf("TTL %u ",dns_message->dns_answer->ttl);
+        printf("rd length %u ",dns_message->dns_answer->rd_length);
         inet_ntop(AF_INET6,&dns_message->dns_answer->sin6_addr,(char *)ip,
                     INET6_ADDRSTRLEN);
-        printf("Ipv6 %s\n",ip);
+        printf("Ipv6 %s ",ip);
         printf("\n");
     }
 }

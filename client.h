@@ -18,7 +18,6 @@
 
 #include "dns.h"
 #include "log.h"
-#include "dns_buffer.h"
 #include "server.h"
 #include "global.h"
 
@@ -26,7 +25,8 @@
 typedef struct client_arg{
     int svrport;
 	char *svrserver;
-	Dns_query_buffer *dns_query_buffer;
+	Dns_message *query_message;
+	int clientfd;
 	FILE *logfd;
 }Client_arg;
 

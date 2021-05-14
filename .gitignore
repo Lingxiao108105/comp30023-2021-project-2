@@ -8,6 +8,7 @@ dns_svr
 *.exe
 *.o
 *.bat
+*.sh
 
 # ignore all test case
 *.txt

@@ -17,7 +17,6 @@
 #include <pthread.h>
 
 #include "dns.h"
-#include "dns_buffer.h"
 #include "log.h"
 #include "global.h"
 #include "client.h"
@@ -25,8 +24,9 @@
 //the argument of run server
 typedef struct server_arg{
     int port;
-    Dns_query_buffer *dns_query_buffer;
 	FILE *logfd;
+    int svrport;
+	char *svrserver;
 }Server_arg;
 
 /**
@@ -51,13 +51,13 @@ int check_query_message(Dns_message *dns_message);
 /**
  * deal with invalid message
 */
-void invalid_query_message(Dns_message *dns_message, FILE *logfd, int newsockfd);
+void invalid_query_message(Dns_message *dns_message, FILE *logfd,int newsockfd);
 /**
  * deal with valid message
- * store it into dns_query_buffer
+ * create a new client thread to deal with it
 */
-void process_query_message(Dns_message *dns_message, 
-			Dns_query_buffer *dns_query_buffer, int newsockfd);
+void process_query_message(Dns_message *dns_message, int clientfd, 
+                        Server_arg *Server_arg);
 
 
 

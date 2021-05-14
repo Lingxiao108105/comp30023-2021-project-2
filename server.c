@@ -9,7 +9,6 @@ void *run_server(void *arg){
 	//server args
 	Server_arg *server_arg = (Server_arg *)arg;
 	int port = server_arg->port;
-	Dns_query_buffer *dns_query_buffer = server_arg->dns_query_buffer;
 	FILE *logfd = server_arg->logfd;
 
 	uint8_t *raw_message;
@@ -56,11 +55,12 @@ void *run_server(void *arg){
 			continue;
 		}
 
-		//process the query message
-		process_query_message(dns_message, dns_query_buffer,newsockfd);
 		pthread_mutex_unlock(&mutex);
 
-	}
+		//process the query message
+		process_query_message(dns_message, newsockfd, server_arg);
+    	
+    }
 
 	close(sockfd);
 	return NULL;
@@ -196,12 +196,23 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 
 /**
  * deal with valid message
- * store it into dns_query_buffer
+ * create a new client thread to deal with it
 */
-void process_query_message(Dns_message *dns_message, 
-			Dns_query_buffer *dns_query_buffer, int newsockfd){
+void process_query_message(Dns_message *dns_message, int clientfd, 
+							Server_arg *server_arg){
+	Client_arg *client_arg= (Client_arg *)malloc(sizeof(Client_arg));
+	client_arg->svrport = server_arg->svrport, 
+	client_arg->svrserver = server_arg->svrserver, 
+	client_arg->query_message = dns_message;
+	client_arg->clientfd =clientfd, 
+	client_arg->logfd= server_arg->logfd;
 
-	//store the query into dns_query_buffer
-	push_dns_message(dns_query_buffer,dns_message,newsockfd);
+	pthread_t clinet_tid;
+	int err;
+	err = pthread_create(&clinet_tid, NULL, &run_client, (void*)client_arg);
+    if(err!=0){
+        perror("client thread");
+		exit(EXIT_FAILURE);
+	}
 
 }

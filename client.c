@@ -10,73 +10,56 @@ void *run_client(void *arg){
 	//args
 	int svrport = client_arg->svrport;
 	char *svrserver = client_arg->svrserver;
-	Dns_query_buffer *dns_query_buffer = client_arg->dns_query_buffer;
+	Dns_message *query_message = client_arg->query_message;
+	int clientfd = client_arg->clientfd;
 	FILE *logfd = client_arg->logfd;
-	
+	//free the arg
+	free(client_arg);
 	
 	uint8_t *raw_message;
 	Dns_message *dns_message;
-	Dns_query_data *dns_query_data;
 	int length;
 	int upsvrfd;
 
-	while(1){
-		
-		//lock 
-		pthread_mutex_lock(&mutex);
-		//no query data
-		if(empty_buffer(dns_query_buffer)){
-			//unlock 
-			pthread_mutex_unlock(&mutex);
-			continue;
-		}
-		dns_query_data = pop_query_data(dns_query_buffer);
-
-		//unlock 
-		pthread_mutex_unlock(&mutex);
-
-		//create connection to server and send the query
-		upsvrfd = create_client_socket(svrport,svrserver);
-		send_query_message(dns_query_data->dns_message,upsvrfd);
-		//read and store the raw message
-		if((raw_message = read_message(upsvrfd, &length)) == NULL){
-			//continue;
-		}
-		close(upsvrfd);
-
-		//read raw message into struture
-		dns_message = read_dns(raw_message);
-
-		print_raw_dns_message(raw_message,length+2);
-		print_dns_message(dns_message);
-
-		//check the message
-		if(check_valid_message(dns_message) == INVALID){
-			free_dns_message(dns_message);
-			return NULL;
-			//continue;
-		}
-
-		//lock 
-		pthread_mutex_lock(&mutex);
-
-		//print the response log
-		if(dns_message->dns_answer->a_type == AAAA){
-			response_log(logfd,dns_message);
-		}
-		//unlock 
-		pthread_mutex_unlock(&mutex);
-
-		//send response message back to client
-		process_response_message(dns_query_data->sockfd,dns_message);
-
-		//free
-		free_query_data(dns_query_data);
-		free_dns_message(dns_message);
-
-		
-
+	//create connection to server and send the query
+	upsvrfd = create_client_socket(svrport,svrserver);
+	send_query_message(query_message,upsvrfd);
+	//read and store the raw message
+	if((raw_message = read_message(upsvrfd, &length)) == NULL){
+		//continue;
 	}
+	close(upsvrfd);
+
+	//read raw message into struture
+	dns_message = read_dns(raw_message);
+
+	print_raw_dns_message(raw_message,length+2);
+	print_dns_message(dns_message);
+
+	//check the message
+	if(check_valid_message(dns_message) == INVALID){
+		free_dns_message(dns_message);
+		return NULL;
+		//continue;
+	}
+
+	//lock 
+	pthread_mutex_lock(&mutex);
+
+	//print the response log
+	if(dns_message->dns_answer->a_type == AAAA){
+		response_log(logfd,dns_message);
+	}
+	//unlock 
+	pthread_mutex_unlock(&mutex);
+
+	//send response message back to client
+	process_response_message(clientfd,dns_message);
+
+	//free
+	free_dns_message(dns_message);
+
+		
 
 	return NULL;
 }

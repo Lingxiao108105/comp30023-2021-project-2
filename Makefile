@@ -4,7 +4,7 @@
 # COPT - compiler flags
 # BIN - binary
 CC=gcc
-OBJ=server.o dns.o client.o dns_buffer.o pqueue.o log.o global.o
+OBJ=server.o dns.o client.o pqueue.o log.o global.o
 COPT=-Wall -Wpedantic -g -lpthread
 BIN_PHASE=dns_svr
 
