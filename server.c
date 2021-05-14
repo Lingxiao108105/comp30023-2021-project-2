@@ -167,15 +167,27 @@ int check_query_message(Dns_message *dns_message){
 */
 void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 
-	int n,length = dns_message->dns_header->length +2;
+	int n,length = 14,i;
 	//write the log
 	unimplemented_log(logfd);
-	//set the Rcode to NOTIMPLEMENTED
-	set_Rcode(dns_message, NOTIMPLEMENTED);
-	set_QR(dns_message, RESPONSE);
+
+	uint16_t *raw_message = (uint16_t *)dns_message->raw_message;
+	//set the length
+	*raw_message = htons(0x000C);
+	//set the QR and Rcode
+	raw_message += 2;
+	*raw_message = htons(0x8008);
+	//set count to 0
+	for(i = 0;i<4;i++){
+		raw_message++;
+		*raw_message = htons(0x0000);
+	}
+
+
+	print_raw_dns_message(dns_message->raw_message, length);
+
 	//send back to client
-	n = write(sockfd,dns_message->raw_message,
-				dns_message->dns_header->length +2); 
+	n = write(sockfd,dns_message->raw_message,length); 
 	//close the socket and free the message
 	close(sockfd);
 	free(dns_message);
