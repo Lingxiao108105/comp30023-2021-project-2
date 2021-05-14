@@ -283,16 +283,8 @@ int check_valid_message(Dns_message *dns_message){
         return VALID;
     }
     //check the request dns message
-    // answer and Authority Section will be accept
-    if(dns_message->dns_header->an_count){
-        //check type
-        if(dns_message->dns_answer->a_type != AAAA){
-            return INVALID;
-        }
-    }
-    else{
-        //we dont have an answer in response
-        return INVALID; 
+    if(!dns_message->dns_header->an_count){
+        return INVALID;
     }
 
     //finish checking

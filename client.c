@@ -23,10 +23,12 @@ void *run_client(void *arg){
 			//continue;
 		}
 		close(upsvrfd);
-		//print_raw_dns_message(raw_message,length);
 
 		//read raw message into struture
 		dns_message = read_dns(raw_message);
+
+		print_raw_dns_message(raw_message,length+2);
+		print_dns_message(dns_message);
 
 		//check the message
 		if(check_valid_message(dns_message) == INVALID){
@@ -39,7 +41,9 @@ void *run_client(void *arg){
 		//pthread_mutex_lock(&mutex);
 
 		//print the response log
-		response_log(logfd,dns_message);
+		if(dns_message->dns_answer->a_type == AAAA){
+			response_log(logfd,dns_message);
+		}
 		//send response message back to client
 		process_response_message(dns_message, dns_query_buffer);
 

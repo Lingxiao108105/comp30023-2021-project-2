@@ -41,10 +41,11 @@ void *run_server(void *arg){
 			continue;
 		}
 
-		//print_raw_dns_message(raw_message,length+2);
-
 		//read raw message into struture
 		dns_message = read_dns(raw_message);
+
+		print_raw_dns_message(raw_message,length+2);
+		print_dns_message(dns_message);
 
 		//lock 
 		//pthread_mutex_lock(&mutex);
