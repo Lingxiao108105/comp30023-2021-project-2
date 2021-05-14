@@ -58,8 +58,12 @@ typedef struct dns_answer {
     uint16_t a_type;
     uint16_t a_class;
     uint32_t ttl;
+    //store the postion of ttl(for cache)
+    uint32_t *ttl_ptr;
     uint16_t rd_length;
     struct in6_addr sin6_addr;
+    //store how many bytes till end of first answer(for cache)
+    uint16_t size_till_first_answer;
 }Dns_answer;
 
 typedef struct dns_message{
@@ -86,14 +90,6 @@ Dns_header *read_dns_header(uint8_t *buffer);
  * read the flags
 */
 Dns_flags *read_dns_flags(Dns_message *dns_message);
-/**
- * set the Rcode in dns message to the given Rcode
-*/
-void set_Rcode(Dns_message *dns_message, uint8_t Rcode);
-/**
- * set the QR in dns message to the given QR
-*/
-void set_QR(Dns_message *dns_message, uint8_t QR);
 /**
  * read the Question section
  * can only have One question

@@ -3,8 +3,8 @@
 #include "global.h"
 #include "server.h"
 #include "client.h"
-#include "dns_buffer.h"
 #include "log.h"
+#include "cache.h"
 
 
 //listen to port 8053
@@ -33,9 +33,11 @@ int main(int argc, char* argv[]) {
 	port = atoi(argv[2]);
 	server = argv[1];
 
+    //create cache
+    Dns_cache_buffer *dns_cache_buffer = create_cache_buffer();
 
     //run our server to listen to client
-    Server_arg server_arg = {LISTEN_PORT,logfd,port,server};
+    Server_arg server_arg = {LISTEN_PORT,logfd,port,server,dns_cache_buffer};
     err = pthread_create(&server_tid, NULL, &run_server, (void*)&server_arg);
     if(err!=0){
         perror("server thread");

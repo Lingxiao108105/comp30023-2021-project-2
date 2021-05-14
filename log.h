@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 
 #include "dns.h"
+#include "cache.h"
 
 #define LOGNAME "./dns_svr.log"
 #define PERMISSION 0644
@@ -48,6 +49,16 @@ void unimplemented_log(FILE *logfd);
  * write <domain_name> is at <IP address> log to log file
 */
 void response_log(FILE *logfd, Dns_message *dns_message);
+/**
+ * when store a message in cache
+ * print <domain_name> expires at <timestamp>
+*/
+void store_cache_log(FILE *logfd, Dns_message *dns_message);
+/**
+ * replacing <domain_name> by <domain_name>
+*/
+void replace_log(FILE *logfd, Dns_message *dns_message, 
+                        Dns_cache_data *replacing_data);
 
 
 

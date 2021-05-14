@@ -184,7 +184,7 @@ void *find_data(Pqueue *pqueue, void *data,
 
     //head is the node we want
     if(compare(curr_node->data, data) == EQUAL){
-        target =  pop(pqueue);
+        target = pqueue->head->data;
     }
     else{
         //find the node we need to remove
@@ -196,11 +196,7 @@ void *find_data(Pqueue *pqueue, void *data,
         if(curr_node->next==NULL){
             return NULL;
         }
-        Node *temp = curr_node->next;
-        target = temp->data;
-        curr_node->next = temp->next;
-        (pqueue->length)--;
-        free(temp);
+        target = curr_node->next->data;
     }
     return target;
 }

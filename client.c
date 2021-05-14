@@ -2,7 +2,7 @@
 
 
 /**
- * read dns response from server and return it to the client
+ * send query to server and return the response
  * param sockfd : the socket to server
 */
 void *run_client(void *arg){
@@ -13,20 +13,25 @@ void *run_client(void *arg){
 	Dns_message *query_message = client_arg->query_message;
 	int clientfd = client_arg->clientfd;
 	FILE *logfd = client_arg->logfd;
+	Dns_cache_buffer *dns_cache_buffer = client_arg->dns_cache_buffer;
+
 	//free the arg
 	free(client_arg);
 	
 	uint8_t *raw_message;
 	Dns_message *dns_message;
+	Dns_cache_data *replaced_data;
 	int length;
 	int upsvrfd;
+
 
 	//create connection to server and send the query
 	upsvrfd = create_client_socket(svrport,svrserver);
 	send_query_message(query_message,upsvrfd);
 	//read and store the raw message
 	if((raw_message = read_message(upsvrfd, &length)) == NULL){
-		//continue;
+		printf("ERROR! Cannot read from server");
+		return NULL;
 	}
 	close(upsvrfd);
 
@@ -40,7 +45,6 @@ void *run_client(void *arg){
 	if(check_valid_message(dns_message) == INVALID){
 		free_dns_message(dns_message);
 		return NULL;
-		//continue;
 	}
 
 	//lock 
@@ -50,16 +54,18 @@ void *run_client(void *arg){
 	if(dns_message->dns_answer->a_type == AAAA){
 		response_log(logfd,dns_message);
 	}
+	//store response with answer into cache
+	if(dns_message->dns_header->an_count){
+		replaced_data = store_dns_message(dns_cache_buffer,dns_message);
+		store_cache_log(logfd,dns_message);
+		replace_log(logfd,dns_message, replaced_data);
+		free_cache_data(replaced_data);
+	}
 	//unlock 
 	pthread_mutex_unlock(&mutex);
 
 	//send response message back to client
 	process_response_message(clientfd,dns_message);
-
-	//free
-	free_dns_message(dns_message);
-
-		
 
 	return NULL;
 }
@@ -133,6 +139,7 @@ void process_response_message(int clientfd, Dns_message *dns_message){
 		exit(EXIT_FAILURE);
 	}
 
+	free(dns_message);
 	//close the socket to client
 	close(sockfd);
 
@@ -152,5 +159,7 @@ void send_query_message(Dns_message *dns_message, int serverfd){
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
+
+	free(dns_message);
 
 }

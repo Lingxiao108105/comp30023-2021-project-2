@@ -20,6 +20,7 @@
 #include "log.h"
 #include "server.h"
 #include "global.h"
+#include "cache.h"
 
 //the argument of run client
 typedef struct client_arg{
@@ -28,6 +29,7 @@ typedef struct client_arg{
 	Dns_message *query_message;
 	int clientfd;
 	FILE *logfd;
+	Dns_cache_buffer *dns_cache_buffer;
 }Client_arg;
 
 

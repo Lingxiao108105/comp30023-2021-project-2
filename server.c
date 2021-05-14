@@ -10,6 +10,7 @@ void *run_server(void *arg){
 	Server_arg *server_arg = (Server_arg *)arg;
 	int port = server_arg->port;
 	FILE *logfd = server_arg->logfd;
+	Dns_cache_buffer *dns_cache_buffer = server_arg->dns_cache_buffer;
 
 	uint8_t *raw_message;
 	Dns_message *dns_message;
@@ -40,6 +41,8 @@ void *run_server(void *arg){
 		//read raw message into struture
 		dns_message = read_dns(raw_message);
 
+
+
 		print_raw_dns_message(raw_message,length+2);
 		print_dns_message(dns_message);
 
@@ -55,10 +58,13 @@ void *run_server(void *arg){
 			continue;
 		}
 
+
+
 		pthread_mutex_unlock(&mutex);
 
 		//process the query message
-		process_query_message(dns_message, newsockfd, server_arg);
+		process_query_message(dns_message, newsockfd, server_arg, 
+							dns_cache_buffer);
     	
     }
 
@@ -196,16 +202,44 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 
 /**
  * deal with valid message
+ * if dns cache data is not NULL, response using cache data
  * create a new client thread to deal with it
 */
 void process_query_message(Dns_message *dns_message, int clientfd, 
-							Server_arg *server_arg){
+					Server_arg *server_arg, Dns_cache_buffer *dns_cache_buffer){
 	Client_arg *client_arg= (Client_arg *)malloc(sizeof(Client_arg));
+	Dns_cache_data *dns_cache_data;
+
+	//lock 
+	pthread_mutex_lock(&mutex);
+
+	//search in cache
+	dns_cache_data = find_cache_data(dns_cache_buffer, 
+							dns_message->dns_question->q_name);
+
+	//unlock 
+	pthread_mutex_unlock(&mutex);
+
+	//check the cache data
+	if(dns_cache_data != NULL){
+		//response using cache data
+		Dns_message *response_message = set_TTL_and_ID(dns_cache_data,
+														dns_message);
+		process_response_message(clientfd,response_message);
+		//release 
+		free(client_arg);
+		close(clientfd);
+		//dont need to create a new thread to response query
+		return;
+	}
+
+	//set the client arguments
 	client_arg->svrport = server_arg->svrport, 
 	client_arg->svrserver = server_arg->svrserver, 
 	client_arg->query_message = dns_message;
 	client_arg->clientfd =clientfd, 
 	client_arg->logfd= server_arg->logfd;
+	client_arg->dns_cache_buffer = dns_cache_buffer;
 
 	pthread_t clinet_tid;
 	int err;

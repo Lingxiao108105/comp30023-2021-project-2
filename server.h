@@ -20,6 +20,7 @@
 #include "log.h"
 #include "global.h"
 #include "client.h"
+#include "cache.h"
 
 //the argument of run server
 typedef struct server_arg{
@@ -27,6 +28,7 @@ typedef struct server_arg{
 	FILE *logfd;
     int svrport;
 	char *svrserver;
+    Dns_cache_buffer *dns_cache_buffer;
 }Server_arg;
 
 /**
@@ -54,10 +56,11 @@ int check_query_message(Dns_message *dns_message);
 void invalid_query_message(Dns_message *dns_message, FILE *logfd,int newsockfd);
 /**
  * deal with valid message
+ * if dns cache data is not NULL, response using cache data
  * create a new client thread to deal with it
 */
 void process_query_message(Dns_message *dns_message, int clientfd, 
-                        Server_arg *Server_arg);
+					Server_arg *server_arg, Dns_cache_buffer *dns_cache_buffer);
 
 
 

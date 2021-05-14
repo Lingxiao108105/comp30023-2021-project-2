@@ -144,48 +144,6 @@ Dns_flags *read_dns_flags(Dns_message *dns_message){
 
 }
 
-/**
- * set the Rcode in dns message to the given Rcode
-*/
-void set_Rcode(Dns_message *dns_message, uint8_t Rcode){
-    uint16_t flags;
-    uint8_t *raw_message;
-    uint16_t *raw_flags;
-
-    dns_message->dns_flags->Rcode = Rcode;
-    //set the flags in structure
-    flags = dns_message->dns_header->flags;
-    flags = (flags&0xFFF0)|(uint16_t)Rcode;
-    dns_message->dns_header->flags = flags;
-    //set the flags in raw message
-    raw_message = dns_message->raw_message;
-    raw_message += 2; //skip the length
-    raw_message += 2; //skip the id
-    raw_flags = (uint16_t *)raw_message;
-    *raw_flags = htons(flags);
-}
-
-/**
- * set the QR in dns message to the given QR
-*/
-void set_QR(Dns_message *dns_message, uint8_t QR){
-    uint16_t flags;
-    uint8_t *raw_message;
-    uint16_t *raw_flags;
-
-    dns_message->dns_flags->QR = QR;
-    //set the flags in structure
-    flags = dns_message->dns_header->flags;
-    flags = (flags&0xEFFF)|(((uint16_t)QR)<<15);
-    dns_message->dns_header->flags = flags;
-    //set the flags in raw message
-    raw_message = dns_message->raw_message;
-    raw_message += 2; //skip the length
-    raw_message += 2; //skip the id
-    raw_flags = (uint16_t *)raw_message;
-    *raw_flags = htons(flags);
-
-}
 
 /**
  * read the Question section
@@ -242,6 +200,8 @@ Dns_question *read_dns_question(uint8_t *raw_message, int length,
 Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
     Dns_answer *dns_answer = (Dns_answer *)malloc(sizeof(Dns_answer));
     uint16_t *pt = (uint16_t *)*c_pt;
+    uint8_t *pt_count;
+    uint16_t count;
     dns_answer->name_offset = ntohs(pt[0]);
     //cancel the first two bits
     dns_answer->name_offset = dns_answer->name_offset&(~0xC000);
@@ -253,6 +213,7 @@ Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
     pt += 1;
     //read ttl
     dns_answer->ttl = ntohl(((uint32_t *)pt)[0]);
+    dns_answer->ttl_ptr = (uint32_t *)pt;
     pt = pt + sizeof(uint32_t)/sizeof(uint16_t);
     //read length of data
     dns_answer->rd_length = ntohs(pt[0]);
@@ -265,6 +226,14 @@ Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
 
     //record the current place
     *c_pt = (uint8_t *)pt;
+    //count how many bytes we pass and store it (for cache)
+    pt_count = raw_message;
+    count = 0;
+    while(pt_count != *c_pt){
+        count++;
+        pt_count++;
+    }
+    dns_answer->size_till_first_answer = count;
 
     return dns_answer;
 
