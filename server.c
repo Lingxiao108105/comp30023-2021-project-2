@@ -176,7 +176,7 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 	*raw_message = htons(0x000C);
 	//set the QR and Rcode
 	raw_message += 2;
-	*raw_message = htons(0x8008);
+	*raw_message = htons(0x8004);
 	//set count to 0
 	for(i = 0;i<4;i++){
 		raw_message++;
