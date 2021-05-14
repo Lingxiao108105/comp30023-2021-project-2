@@ -91,6 +91,10 @@ Dns_flags *read_dns_flags(Dns_message *dns_message);
 */
 void set_Rcode(Dns_message *dns_message, uint8_t Rcode);
 /**
+ * set the QR in dns message to the given QR
+*/
+void set_QR(Dns_message *dns_message, uint8_t QR);
+/**
  * read the Question section
  * can only have One question
 */

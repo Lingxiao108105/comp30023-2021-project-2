@@ -172,6 +172,7 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 	unimplemented_log(logfd);
 	//set the Rcode to NOTIMPLEMENTED
 	set_Rcode(dns_message, NOTIMPLEMENTED);
+	set_QR(dns_message, RESPONSE);
 	//send back to client
 	n = write(sockfd,dns_message->raw_message,
 				dns_message->dns_header->length +2); 

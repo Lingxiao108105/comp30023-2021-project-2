@@ -166,6 +166,28 @@ void set_Rcode(Dns_message *dns_message, uint8_t Rcode){
 }
 
 /**
+ * set the QR in dns message to the given QR
+*/
+void set_QR(Dns_message *dns_message, uint8_t QR){
+    uint16_t flags;
+    uint8_t *raw_message;
+    uint16_t *raw_flags;
+
+    dns_message->dns_flags->QR = QR;
+    //set the flags in structure
+    flags = dns_message->dns_header->flags;
+    flags = (flags&0xEFFF)|(((uint16_t)QR)<<15);
+    dns_message->dns_header->flags = flags;
+    //set the flags in raw message
+    raw_message = dns_message->raw_message;
+    raw_message += 2; //skip the length
+    raw_message += 2; //skip the id
+    raw_flags = (uint16_t *)raw_message;
+    *raw_flags = htons(flags);
+
+}
+
+/**
  * read the Question section
  * can only have One question
 */
