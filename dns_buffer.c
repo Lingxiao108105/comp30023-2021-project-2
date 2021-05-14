@@ -68,6 +68,13 @@ void push_dns_message(Dns_query_buffer *dns_query_buffer,
 }
 
 /**
+ * pop the first data in the dns query buffer
+*/
+Dns_query_data *pop_query_data(Dns_query_buffer *dns_query_buffer){
+    return (Dns_query_data *)pop(dns_query_buffer->buffer);
+}
+
+/**
  * use dns message id to find the query data
  * and pop it out from the pqueue
 */
@@ -92,4 +99,11 @@ int compare_query_data(void *pv1, void *pv2){
         return EQUAL;
     }
     return SMALLER;
+}
+
+/**
+ * check whether the buffer is Empty
+*/
+int empty_buffer(Dns_query_buffer *dns_query_buffer){
+    return isEmpty(dns_query_buffer->buffer);
 }

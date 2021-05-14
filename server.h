@@ -25,8 +25,6 @@
 //the argument of run server
 typedef struct server_arg{
     int port;
-    int svrport;
-    char *svrserver;
     Dns_query_buffer *dns_query_buffer;
 	FILE *logfd;
 }Server_arg;
@@ -56,11 +54,10 @@ int check_query_message(Dns_message *dns_message);
 void invalid_query_message(Dns_message *dns_message, FILE *logfd, int newsockfd);
 /**
  * deal with valid message
- * send the message to upstream server
- * and store it into dns_query_buffer
+ * store it into dns_query_buffer
 */
-void process_query_message(Dns_message *dns_message, int serverfd, 
-					Dns_query_buffer *dns_query_buffer, int newsockfd);
+void process_query_message(Dns_message *dns_message, 
+			Dns_query_buffer *dns_query_buffer, int newsockfd);
 
 
 

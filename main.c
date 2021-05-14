@@ -10,11 +10,13 @@
 //listen to port 8053
 #define LISTEN_PORT 8053
 
+#define NONBLOCKING
+
 
 int main(int argc, char* argv[]) {
 
-    //pthread_t server_tid,clinet_tid;
-    //int err;
+    pthread_t server_tid,clinet_tid;
+    int err;
     if (pthread_mutex_init(&mutex, NULL) != 0){
         perror("mutex");
 		exit(EXIT_FAILURE);
@@ -35,15 +37,14 @@ int main(int argc, char* argv[]) {
 
 
     //run our server to listen to client
-    Server_arg server_arg = {LISTEN_PORT,port, server, dns_query_buffer,logfd};
-    /**
+    Server_arg server_arg = {LISTEN_PORT, dns_query_buffer,logfd};
     err = pthread_create(&server_tid, NULL, &run_server, (void*)&server_arg);
     if(err!=0){
         perror("server thread");
 		exit(EXIT_FAILURE);
     }
     //run our client to read response from upstream server
-    Client_arg client_arg = {upsvrfd, dns_query_buffer, logfd};
+    Client_arg client_arg = {port, server, dns_query_buffer, logfd};
     pthread_create(&clinet_tid, NULL, &run_client, (void*)&client_arg);
     if(err!=0){
         perror("client thread");
@@ -53,9 +54,6 @@ int main(int argc, char* argv[]) {
     //wait till server and client thread ends
     pthread_join(server_tid, NULL);
 	pthread_join(clinet_tid, NULL);
-
-    **/
-    run_server((void*)&server_arg);
 
 
     //close the file

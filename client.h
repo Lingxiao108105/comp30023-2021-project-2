@@ -24,11 +24,10 @@
 
 //the argument of run client
 typedef struct client_arg{
-    int upsvrfd;
+    int svrport;
+	char *svrserver;
 	Dns_query_buffer *dns_query_buffer;
 	FILE *logfd;
-	int svrport;
-    char *svrserver;
 }Client_arg;
 
 
@@ -51,7 +50,10 @@ int setup_client_socket(const int port, const char* server_name,
 /**
  * send the response message back to client
 */
-void process_response_message(Dns_message *dns_message,
-					Dns_query_buffer *dns_query_buffer);
+void process_response_message(int clientfd, Dns_message *dns_message);
+/**
+ * send the query message to server
+*/
+void send_query_message(Dns_message *dns_message, int serverfd);
 
 #endif
