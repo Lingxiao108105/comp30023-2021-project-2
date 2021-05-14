@@ -29,10 +29,15 @@ Dns_query_buffer *create_query_buffer();
 */
 Dns_query_data *new_query_data(Dns_message *dns_message, int sockfd);
 /**
+ * free a query buffer
+ * will not close the sockfd in the data(Need to close somewhere else)
+*/
+void free_query_buffer(Dns_query_buffer *dns_query_buffer);
+/**
  * free a query data
  * will not close the sockfd in the data(Need to close somewhere else)
 */
-void free_query_data(Dns_query_data *dns_query_data);
+void free_query_data(void *ptr);
 /**
  * push a query data into dns query buffer
 */

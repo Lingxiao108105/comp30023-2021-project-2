@@ -73,7 +73,11 @@ typedef struct dns_message{
 /**
  * read the dns message
 */
-Dns_message *read_dns(uint8_t *raw_message, int length);
+Dns_message *read_dns(uint8_t *raw_message);
+/**
+ * print the dns message
+*/
+void print_dns_message(Dns_message *dns_message);
 /**
  * read the header
 */
@@ -96,7 +100,7 @@ Dns_question *read_dns_question(uint8_t *raw_message, int length,
  * read the Answer section
  * only read the first Answer
 */
-Dns_answer *read_dns_answer(uint8_t *raw_message, int length, uint8_t **c_pt);
+Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt);
 /**
  * free the dns message
 */

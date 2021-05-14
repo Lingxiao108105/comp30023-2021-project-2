@@ -11,29 +11,32 @@ void *run_client(void *arg){
 	int upsvrfd = client_arg->upsvrfd;
 	Dns_query_buffer *dns_query_buffer = client_arg->dns_query_buffer;
 	FILE *logfd = client_arg->logfd;
-
+	
 	uint8_t *raw_message;
 	Dns_message *dns_message;
 	int length;
 
-	while(1){
+	//while(1){
+		//upsvrfd = create_client_socket(client_arg->svrport,client_arg->svrserver);
 		//read and store the raw message
-		if((raw_message = read_response_message(upsvrfd, &length)) == NULL){
-			continue;
+		if((raw_message = read_message(upsvrfd, &length)) == NULL){
+			//continue;
 		}
+		close(upsvrfd);
+		//print_raw_dns_message(raw_message,length);
 
 		//read raw message into struture
-		dns_message = read_dns(raw_message,length);
+		dns_message = read_dns(raw_message);
 
-		
 		//check the message
 		if(check_valid_message(dns_message) == INVALID){
 			free_dns_message(dns_message);
-			continue;
+			return NULL;
+			//continue;
 		}
 
 		//lock 
-		pthread_mutex_lock(&mutex);
+		//pthread_mutex_lock(&mutex);
 
 		//print the response log
 		response_log(logfd,dns_message);
@@ -42,34 +45,26 @@ void *run_client(void *arg){
 
 
 		//unlock 
-		pthread_mutex_unlock(&mutex);
+		//pthread_mutex_unlock(&mutex);
 
 
 		//we dont cache the message now;
 		free_dns_message(dns_message);
 		
 
-	}
+	//}
 
 	return NULL;
 }
 
 /**
  * Connet to the dns server
- * input is the input for main
+ * input is the port and server
 */
-int create_client_socket(int argc, char* argv[]){
+int create_client_socket(int port, char* server){
 	struct sockaddr_in serv_addr;
-	char* server;
-	int port;
 	int sockfd;
 
-	if (argc < 3) {
-		fprintf(stderr, "usage: %s hostname port\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	port = atoi(argv[2]);
-	server = argv[1];
 	/* Make connection */
 	sockfd = setup_client_socket(port, server, &serv_addr);
 	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) <
@@ -102,7 +97,7 @@ int setup_client_socket(const int port, const char* server_name,
 	serv_addr->sin_port = htons(port);
 
 	/* Create socket */
-	sockfd = socket(PF_INET, SOCK_STREAM, 0);
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
@@ -110,45 +105,6 @@ int setup_client_socket(const int port, const char* server_name,
 
 	return sockfd;
 }
-
-/**
- * read the response message and store it
- * will not close the socket
- * return NULL if read nothing
-*/
-uint8_t *read_response_message(int newsockfd, int *length){
-	uint16_t buffer;
-	uint8_t *dns_message;
-	int n;
-
-	// Read the lenght from client
-	n = read(newsockfd, &buffer, sizeof(buffer));
-	if (n == 0) {
-		return NULL;
-	}
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-
-	*length = ntohs(buffer);
-
-	//read and store the message
-	dns_message = (uint8_t *)malloc(sizeof(char)*(ntohs(buffer)+2));
-	bcopy(&buffer,dns_message,sizeof(buffer));
-	n = read(newsockfd, dns_message+sizeof(buffer), sizeof(char)*ntohs(buffer));
-	if (n == 0) {
-		free(dns_message);
-		return NULL;
-	}
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-
-	return dns_message;
-}
-
 
 
 /**
@@ -172,7 +128,7 @@ void process_response_message(Dns_message *dns_message,
 	//write the responce to client 
 	length = dns_message->dns_header->length + 2; //include the length of length
 
-	//transfer the query to server
+	//transfer the query to client
 	n = write(sockfd, dns_message->raw_message, length);
 	if(n != length){
 		perror("socket");

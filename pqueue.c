@@ -81,6 +81,11 @@ void push_node(Pqueue *pqueue, Node *temp,
         pqueue->head = temp;
         return;
     }
+    
+    //ignore equal node
+    if(compare(temp->data,pqueue->head->data)==EQUAL){
+        return;
+    }
 
     //add new node at head
     if(compare(temp->data,pqueue->head->data)==SMALLER){

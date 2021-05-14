@@ -3,7 +3,7 @@
 /**
  * read the dns message
 */
-Dns_message *read_dns(uint8_t *raw_message, int length){
+Dns_message *read_dns(uint8_t *raw_message){
     //point to the current place of raw message
     uint8_t **c_pt = &raw_message;
     Dns_message *dns_message = (Dns_message *)malloc(sizeof(Dns_message));
@@ -14,19 +14,86 @@ Dns_message *read_dns(uint8_t *raw_message, int length){
     dns_message->dns_flags = read_dns_flags(dns_message);
     //read the question and answer when they exist
     if(dns_message->dns_header->qd_count){
-       dns_message->dns_question = read_dns_question(raw_message,length, c_pt);
+       dns_message->dns_question = read_dns_question(raw_message,
+                            dns_message->dns_header->length, c_pt);
     }
     else{
         dns_message->dns_question = NULL;
     }
     if(dns_message->dns_header->an_count){
-       dns_message->dns_answer = read_dns_answer(raw_message, length, c_pt);
+       dns_message->dns_answer = read_dns_answer(raw_message, c_pt);
     }
     else{
         dns_message->dns_answer = NULL;
     }
+    //print_dns_message(dns_message);
 
     return dns_message;
+}
+
+/**
+ * print the dns message
+*/
+void print_dns_message(Dns_message *dns_message){
+    char ip[INET6_ADDRSTRLEN+1];
+    if(dns_message == NULL){
+        printf("dns message is NULL\n");
+        return;
+    }
+    if(dns_message->dns_header == NULL){
+        printf("dns header is NULL\n");
+    }
+    else{
+        printf("header: \n");
+        printf("length %u\n",dns_message->dns_header->length);
+        printf("id %u\n",dns_message->dns_header->id);
+        printf("flags %u\n",dns_message->dns_header->flags);
+        printf("qn %u\n",dns_message->dns_header->qd_count);
+        printf("an %u\n",dns_message->dns_header->an_count);
+        printf("ns %u\n",dns_message->dns_header->ns_count);
+        printf("ar %u\n",dns_message->dns_header->ar_count);
+        printf("\n");
+    }
+    if(dns_message->dns_flags == NULL){
+        printf("dns flags is NULL\n");
+    }
+    else{
+        printf("flags: \n");
+        printf("QR %u\n",dns_message->dns_flags->QR);
+        printf("Opcode %u\n",dns_message->dns_flags->Opcode);
+        printf("AA %u\n",dns_message->dns_flags->AA);
+        printf("TC %u\n",dns_message->dns_flags->TC);
+        printf("RD %u\n",dns_message->dns_flags->RD);
+        printf("RA %u\n",dns_message->dns_flags->RA);
+        printf("Z %u\n",dns_message->dns_flags->Z);
+        printf("R %u\n",dns_message->dns_flags->Rcode);
+        printf("\n");
+    }
+    if(dns_message->dns_question == NULL){
+        printf("dns question is NULL\n");
+    }
+    else{
+        printf("Question: \n");
+        printf("name %s\n",dns_message->dns_question->q_name);
+        printf("type %u\n",dns_message->dns_question->q_type);
+        printf("class %u\n",dns_message->dns_question->q_class);
+        printf("\n");
+    }
+    if(dns_message->dns_answer == NULL){
+        printf("dns answer is NULL\n");
+    }
+    else{
+        printf("Answer: \n");
+        printf("name offset %u\n",dns_message->dns_answer->name_offset);
+        printf("type %u\n",dns_message->dns_answer->a_type);
+        printf("class %u\n",dns_message->dns_answer->a_class);
+        printf("TTL %u\n",dns_message->dns_answer->ttl);
+        printf("rd length %u\n",dns_message->dns_answer->rd_length);
+        inet_ntop(AF_INET6,&dns_message->dns_answer->sin6_addr,(char *)ip,
+                    INET6_ADDRSTRLEN);
+        printf("Ipv6 %s\n",ip);
+        printf("\n");
+    }
 }
 
 
@@ -36,7 +103,7 @@ Dns_message *read_dns(uint8_t *raw_message, int length){
 Dns_header *read_dns_header(uint8_t *raw_message){
     Dns_header *dns_header = (Dns_header *)malloc(sizeof(Dns_header));
     bcopy(raw_message,dns_header,sizeof(Dns_header));
-    dns_header->length = ntohs(dns_header->id);
+    dns_header->length = ntohs(dns_header->length);
     dns_header->id = ntohs(dns_header->id);
     dns_header->flags = ntohs(dns_header->flags);
     dns_header->qd_count = ntohs(dns_header->qd_count);
@@ -150,7 +217,7 @@ Dns_question *read_dns_question(uint8_t *raw_message, int length,
  * read the Answer section
  * only read the first Answer
 */
-Dns_answer *read_dns_answer(uint8_t *raw_message, int length, uint8_t **c_pt){
+Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
     Dns_answer *dns_answer = (Dns_answer *)malloc(sizeof(Dns_answer));
     uint16_t *pt = (uint16_t *)*c_pt;
     dns_answer->name_offset = ntohs(pt[0]);
@@ -216,6 +283,7 @@ int check_valid_message(Dns_message *dns_message){
         return VALID;
     }
     //check the request dns message
+    // answer and Authority Section will be accept
     if(dns_message->dns_header->an_count){
         //check type
         if(dns_message->dns_answer->a_type != AAAA){

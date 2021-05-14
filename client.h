@@ -27,6 +27,8 @@ typedef struct client_arg{
     int upsvrfd;
 	Dns_query_buffer *dns_query_buffer;
 	FILE *logfd;
+	int svrport;
+    char *svrserver;
 }Client_arg;
 
 
@@ -37,20 +39,15 @@ typedef struct client_arg{
 void *run_client(void *arg);
 /**
  * Connet to the dns server
- * param argv : the input for main
+ * input is the port and server
 */
-int create_client_socket(int argc, char* argv[]);
+int create_client_socket(int port, char* server);
 /**
  * function from "week9-solutions/client-1.3.c"
  * Create and return a socket bound to the given port and server
 */
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
-/**
- * read the response message and store it
- * return NULL if read nothing
-*/
-uint8_t *read_response_message(int newsockfd, int *length);
 /**
  * send the response message back to client
 */

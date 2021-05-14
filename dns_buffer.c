@@ -23,11 +23,25 @@ Dns_query_data *new_query_data(Dns_message *dns_message, int sockfd){
     return dns_query_data;
 }
 
+
+/**
+ * free a query buffer
+ * will not close the sockfd in the data(Need to close somewhere else)
+*/
+void free_query_buffer(Dns_query_buffer *dns_query_buffer){
+    if(dns_query_buffer == NULL){
+        return;
+    }
+    free_pqueue(dns_query_buffer->buffer,&free_query_data);
+    free(dns_query_buffer);
+}
+
 /**
  * free a query data
  * will not close the sockfd in the data(Need to close somewhere else)
 */
-void free_query_data(Dns_query_data *dns_query_data){
+void free_query_data(void *ptr){
+    Dns_query_data *dns_query_data = (Dns_query_data *)ptr;
     if(dns_query_data == NULL){
         return;
     }

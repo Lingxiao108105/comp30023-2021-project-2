@@ -10,28 +10,33 @@
 //listen to port 8053
 #define LISTEN_PORT 8053
 
+
 int main(int argc, char* argv[]) {
 
-    pthread_t server_tid,clinet_tid;
-    int err;
+    //pthread_t server_tid,clinet_tid;
+    //int err;
     if (pthread_mutex_init(&mutex, NULL) != 0){
         perror("mutex");
 		exit(EXIT_FAILURE);
     }
     //socket for upstream seraver
-    int upsvrfd;
+    int port;
+    char *server;
     //log file
     FILE *logfd = create_log_file();
     //query buffer
     Dns_query_buffer *dns_query_buffer = create_query_buffer();
+    if (argc < 3) {
+		fprintf(stderr, "usage: %s hostname port\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	port = atoi(argv[2]);
+	server = argv[1];
 
-
-    //create TCP connect to upstream dns server
-    upsvrfd = create_client_socket(argc,argv);
 
     //run our server to listen to client
-    Server_arg server_arg = {LISTEN_PORT,upsvrfd, 
-                            dns_query_buffer,logfd};
+    Server_arg server_arg = {LISTEN_PORT,port, server, dns_query_buffer,logfd};
+    /**
     err = pthread_create(&server_tid, NULL, &run_server, (void*)&server_arg);
     if(err!=0){
         perror("server thread");
@@ -49,9 +54,10 @@ int main(int argc, char* argv[]) {
     pthread_join(server_tid, NULL);
 	pthread_join(clinet_tid, NULL);
 
+    **/
+    run_server((void*)&server_arg);
 
-    //close the TCP connet to upstream dns server
-    close(upsvrfd);
+
     //close the file
     fclose(logfd);
     return 0;

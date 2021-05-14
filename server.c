@@ -9,12 +9,15 @@ void *run_server(void *arg){
 	//server args
 	Server_arg *server_arg = (Server_arg *)arg;
 	int port = server_arg->port;
-	int serverfd = server_arg->serverfd;
+	int svrport = server_arg->svrport;
+	char *svrserver = server_arg->svrserver;
 	Dns_query_buffer *dns_query_buffer = server_arg->dns_query_buffer;
 	FILE *logfd = server_arg->logfd;
 
 	uint8_t *raw_message;
 	Dns_message *dns_message;
+	//socket for upstrea server
+	int upsvrfd;
 	int sockfd, newsockfd;
 	int length;
 
@@ -38,27 +41,34 @@ void *run_server(void *arg){
 			continue;
 		}
 
+		//print_raw_dns_message(raw_message,length+2);
+
 		//read raw message into struture
-		dns_message = read_dns(raw_message,length);
+		dns_message = read_dns(raw_message);
 
 		//lock 
-		pthread_mutex_lock(&mutex);
+		//pthread_mutex_lock(&mutex);
 
 		//print the request log
 		requested_log(logfd,(char *)dns_message->dns_question->q_name);
 		//check the message
 		if(check_query_message(dns_message) == INVALID){
 			invalid_query_message(dns_message,logfd,newsockfd);
-			pthread_mutex_unlock(&mutex);
+			//pthread_mutex_unlock(&mutex);
 			continue;
 		}
-		
-		//process the query message
-		process_query_message(dns_message, serverfd, dns_query_buffer, 
-								newsockfd);
 
+		//create TCP connection to upstrea server
+		upsvrfd = create_client_socket(svrport,svrserver);
+		//process the query message
+		process_query_message(dns_message, upsvrfd, dns_query_buffer, 
+								newsockfd);
+		//close(upsvrfd);
 		//unlock 
-		pthread_mutex_unlock(&mutex);
+		//pthread_mutex_unlock(&mutex);
+
+		Client_arg client_arg = {upsvrfd, dns_query_buffer, logfd, svrport,svrserver};
+		run_client((void*)&client_arg);
 
 	}
 
@@ -183,7 +193,7 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 void process_query_message(Dns_message *dns_message, int serverfd, 
 					Dns_query_buffer *dns_query_buffer, int newsockfd){
 	int n,length;
-	length = dns_message->dns_header->length + 2; //include the length of length
+	length = dns_message->dns_header->length + 2; 
 
 	//transfer the query to server
 	n = write(serverfd, dns_message->raw_message, length);

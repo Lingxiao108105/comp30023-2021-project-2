@@ -20,11 +20,13 @@
 #include "dns_buffer.h"
 #include "log.h"
 #include "global.h"
+#include "client.h"
 
 //the argument of run server
 typedef struct server_arg{
     int port;
-    int serverfd;
+    int svrport;
+    char *svrserver;
     Dns_query_buffer *dns_query_buffer;
 	FILE *logfd;
 }Server_arg;
