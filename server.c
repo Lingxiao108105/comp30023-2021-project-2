@@ -123,7 +123,7 @@ int create_server_socket(const int port) {
 uint8_t *read_message(int newsockfd, int *length){
 	uint16_t buffer;
 	uint8_t *dns_message;
-	int n;
+	int n, current_read;
 
 	// Read the lenght from client
 	n = read(newsockfd, &buffer, sizeof(buffer));
@@ -136,12 +136,18 @@ uint8_t *read_message(int newsockfd, int *length){
 		exit(EXIT_FAILURE);
 	}
 
+	n = 0;
+	current_read = 0;
 	*length = ntohs(buffer);
 
 	//read and store the message
 	dns_message = (uint8_t *)malloc(sizeof(char)*(ntohs(buffer)+2));
 	bcopy(&buffer,dns_message,sizeof(buffer));
-	n = read(newsockfd, dns_message+sizeof(buffer), sizeof(char)*ntohs(buffer));
+	while(current_read != *length){
+		n = read(newsockfd, dns_message+sizeof(buffer)+current_read, 
+						*length-current_read);
+		current_read += n;
+	}
 	if (n == 0) {
 		close(newsockfd);
 		free(dns_message);
