@@ -50,10 +50,10 @@ void unimplemented_log(FILE *logfd);
 */
 void response_log(FILE *logfd, Dns_message *dns_message);
 /**
- * when store a message in cache
+ * when use a message in cache
  * print <domain_name> expires at <timestamp>
 */
-void store_cache_log(FILE *logfd, Dns_message *dns_message);
+void response_cache_log(FILE *logfd, Dns_message *dns_message);
 /**
  * replacing <domain_name> by <domain_name>
 */

@@ -50,17 +50,19 @@ void *run_client(void *arg){
 	//lock 
 	pthread_mutex_lock(&mutex);
 
+	//store response with answer into cache
+	if(dns_message->dns_header->an_count){
+		replaced_data = store_dns_message(dns_cache_buffer,dns_message);
+		replace_log(logfd,dns_message, replaced_data);
+		free_cache_data(replaced_data);
+	}
+
 	//print the response log
 	if(dns_message->dns_answer->a_type == AAAA){
 		response_log(logfd,dns_message);
 	}
-	//store response with answer into cache
-	if(dns_message->dns_header->an_count){
-		replaced_data = store_dns_message(dns_cache_buffer,dns_message);
-		store_cache_log(logfd,dns_message);
-		replace_log(logfd,dns_message, replaced_data);
-		free_cache_data(replaced_data);
-	}
+
+	
 	//unlock 
 	pthread_mutex_unlock(&mutex);
 

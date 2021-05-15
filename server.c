@@ -225,6 +225,8 @@ void process_query_message(Dns_message *dns_message, int clientfd,
 		//response using cache data
 		Dns_message *response_message = set_TTL_and_ID(dns_cache_data,
 														dns_message);
+		response_cache_log(server_arg->logfd,response_message);
+		response_log(server_arg->logfd,response_message);
 		process_response_message(clientfd,response_message);
 		//release 
 		free(client_arg);

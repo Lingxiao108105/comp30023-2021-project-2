@@ -83,10 +83,10 @@ void response_log(FILE *logfd, Dns_message *dns_message){
 }
 
 /**
- * when store a message in cache
+ * when use a message in cache
  * print <domain_name> expires at <timestamp>
 */
-void store_cache_log(FILE *logfd, Dns_message *dns_message){
+void response_cache_log(FILE *logfd, Dns_message *dns_message){
     write_timestamp(logfd);
     fprintf(logfd, "%s expires at ",dns_message->dns_question->q_name);
     specific_timestamp(logfd, time(NULL) + dns_message->dns_answer->ttl);
