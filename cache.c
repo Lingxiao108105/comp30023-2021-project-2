@@ -28,18 +28,10 @@ Dns_cache_buffer *create_cache_buffer(){
 Dns_cache_data *new_cache_data(Dns_message *dns_message){
     Dns_cache_data *dns_cache_data = (Dns_cache_data *)malloc(
                                         sizeof(Dns_cache_data));
-    //store utill end of first answer
-    uint16_t size = dns_message->dns_answer->size_till_first_answer;
-    uint16_t length;
+    //store all the information
+    uint16_t size = dns_message->dns_header->length + 2;
     uint8_t *raw_message = (uint8_t *)malloc(size);
-    uint16_t *ptr;
     bcopy(dns_message->raw_message,raw_message,size);
-    //change the information length in raw message
-    length = htons(size-2);
-    bcopy(&length,raw_message,2);
-    //set answer count to 1
-    ptr = (uint16_t *)raw_message + 4; //point to the an count
-    *ptr = ntohs(0x0001);
     //read new dns message
     dns_cache_data->dns_message = read_dns(raw_message);
 

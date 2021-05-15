@@ -62,8 +62,6 @@ typedef struct dns_answer {
     uint32_t *ttl_ptr;
     uint16_t rd_length;
     struct in6_addr sin6_addr;
-    //store how many bytes till end of first answer(for cache)
-    uint16_t size_till_first_answer;
 }Dns_answer;
 
 typedef struct dns_message{

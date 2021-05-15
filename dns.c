@@ -200,8 +200,6 @@ Dns_question *read_dns_question(uint8_t *raw_message, int length,
 Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
     Dns_answer *dns_answer = (Dns_answer *)malloc(sizeof(Dns_answer));
     uint16_t *pt = (uint16_t *)*c_pt;
-    uint8_t *pt_count;
-    uint16_t count;
     dns_answer->name_offset = ntohs(pt[0]);
     //cancel the first two bits
     dns_answer->name_offset = dns_answer->name_offset&(~0xC000);
@@ -226,14 +224,6 @@ Dns_answer *read_dns_answer(uint8_t *raw_message, uint8_t **c_pt){
 
     //record the current place
     *c_pt = (uint8_t *)pt;
-    //count how many bytes we pass and store it (for cache)
-    pt_count = raw_message;
-    count = 0;
-    while(pt_count != *c_pt){
-        count++;
-        pt_count++;
-    }
-    dns_answer->size_till_first_answer = count;
 
     return dns_answer;
 
