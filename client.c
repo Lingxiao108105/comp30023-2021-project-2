@@ -38,7 +38,8 @@ void *run_client(void *arg){
 	//read raw message into struture
 	dns_message = read_dns(raw_message);
 
-	print_raw_dns_message(raw_message,length+2);
+	//print message to stdout to debug
+	//print_raw_dns_message(raw_message,length+2);
 	print_dns_message(dns_message);
 
 	//check the message
@@ -62,7 +63,7 @@ void *run_client(void *arg){
 		response_log(logfd,dns_message);
 	}
 
-	
+
 	//unlock 
 	pthread_mutex_unlock(&mutex);
 

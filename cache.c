@@ -86,12 +86,13 @@ Dns_cache_data *store_dns_message(Dns_cache_buffer *dns_cache_buffer,
                     Dns_message *dns_message){
     Dns_cache_data *dns_cache_data = new_cache_data(dns_message);
     Dns_cache_data *replaced_cache_data = NULL;
-    //non expired domain name already in cache
-    replaced_cache_data = find_cache_data(dns_cache_buffer, 
-                                    dns_cache_data->domain_name);
+    //domain name already in cache
+    replaced_cache_data = find_data(dns_cache_buffer->buffer,
+                            dns_cache_data,&compare_cache_data);
     if(replaced_cache_data != NULL){
         //the record in cache has longer TTL
         if(replaced_cache_data->expire_time > dns_cache_data->expire_time){
+            dns_cache_data->dns_message = NULL;
             free_cache_data(dns_cache_data);
             return NULL;
         }

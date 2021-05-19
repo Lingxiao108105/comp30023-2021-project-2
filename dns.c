@@ -94,6 +94,7 @@ void print_dns_message(Dns_message *dns_message){
         printf("Ipv6 %s ",ip);
         printf("\n");
     }
+    printf("\n");
 }
 
 

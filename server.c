@@ -43,7 +43,8 @@ void *run_server(void *arg){
 
 
 
-		print_raw_dns_message(raw_message,length+2);
+		//print message to stdout to debug
+		//print_raw_dns_message(raw_message,length+2);
 		print_dns_message(dns_message);
 
 		//lock 
@@ -185,7 +186,8 @@ void invalid_query_message(Dns_message *dns_message, FILE *logfd, int sockfd){
 	}
 
 
-	print_raw_dns_message(dns_message->raw_message, length);
+	//print message to stdout to debug
+	//print_raw_dns_message(dns_message->raw_message, length);
 
 	//send back to client
 	n = write(sockfd,dns_message->raw_message,length); 
@@ -227,6 +229,9 @@ void process_query_message(Dns_message *dns_message, int clientfd,
 														dns_message);
 		response_cache_log(server_arg->logfd,response_message);
 		response_log(server_arg->logfd,response_message);
+		//print message to stdout to debug
+		print_dns_message(dns_message);
+		//send response message to client and free message
 		process_response_message(clientfd,response_message);
 		//release 
 		free(client_arg);
